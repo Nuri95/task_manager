@@ -20,5 +20,3 @@ class User(UserBase):
 class Token(BaseModel):
     access_token: str
     token_type: str = 'bearer'
-    # эти поля обязательные если мы хотим следовать стандарту OAuth
-    # в access_token будет лежать jwt

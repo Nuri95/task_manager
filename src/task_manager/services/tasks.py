@@ -26,7 +26,6 @@ class TasksService:
         self.session = session
 
     def get(self, task_id: int, user_id: int) -> tables.Task:
-        print(id)
         task = (
             self.session
             .query(tables.Task)
@@ -36,7 +35,6 @@ class TasksService:
         if not task:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-        print(task)
         return task
 
     def get_list(self, user_id: int) -> List[tables.Task]:

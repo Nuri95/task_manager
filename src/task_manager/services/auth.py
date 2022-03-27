@@ -74,7 +74,7 @@ class AuthService:
 
     def create_token(self, user: tables.User) -> Token:
         user_data = User.from_orm(user)
-        now = datetime.now()
+        now = datetime.utcnow()
         payload = {
             'iat': now,
             'nbf': now,
