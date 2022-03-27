@@ -25,12 +25,12 @@ class TasksService:
     def __init__(self, session: Session = Depends(get_session)):
         self.session = session
 
-    def get(self, task_id: int) -> tables.Task:
+    def get(self, task_id: int, user_id: int) -> tables.Task:
         print(id)
         task = (
             self.session
             .query(tables.Task)
-            .filter_by(id=task_id)
+            .filter_by(id=task_id, user_id=user_id)
             .first()
         )
         if not task:
@@ -39,17 +39,18 @@ class TasksService:
         print(task)
         return task
 
-    def get_list(self) -> List[tables.Task]:
+    def get_list(self, user_id: int) -> List[tables.Task]:
         tasks = (
             self.session
             .query(tables.Task)
+            .filter_by(user_id=user_id)
             .all()
         )
 
         return tasks
 
-    def create(self) -> int:
-        task = tables.Task()
+    def create(self, user_id: int) -> int:
+        task = tables.Task(user_id=user_id)
         self.session.add(task)
         self.session.commit()
 
