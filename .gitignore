@@ -214,3 +214,4 @@ fabric.properties
 
 /src/task_manager/sql_app/*.db
 poetry.lock
+.idea/
