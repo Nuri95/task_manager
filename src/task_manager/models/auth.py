@@ -15,6 +15,8 @@ class User(UserBase):
 
     class Config:
         orm_mode = True
+#  orm_mode сообщит модели Pydantic о необходимости чтения данных,
+#  даже если это не dict, а модель ORM
 
 
 class Token(BaseModel):
