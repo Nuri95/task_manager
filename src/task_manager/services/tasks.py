@@ -23,7 +23,7 @@ def sum1(a, b):
     return a + b
 
 
-class Profiler:
+class WorldTimeService:
     def __init__(self):
         self.client = httpx.AsyncClient()
         self.url = 'http://worldtimeapi.org/api/timezone/Asia/Yekaterinburg'
