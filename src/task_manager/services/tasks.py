@@ -1,5 +1,4 @@
 from concurrent.futures.process import ProcessPoolExecutor
-from multiprocessing import Process, Queue
 from typing import List
 
 import asyncio
@@ -19,8 +18,34 @@ from task_manager.sql_app.database import (
 from task_manager.sql_app.enums import Status
 
 
-def sum1(a, b):
+def sum(a, b):
     return a+b
+
+
+class Profiler:
+    def __init__(self):
+        self.client = httpx.AsyncClient()
+
+    def __enter__(self):
+        return self
+
+    async def _get_datetime(self):
+        response = await self.client.get(
+            'http://worldtimeapi.org/api/timezone/Asia/Yekaterinburg'
+        )
+
+        try:
+            return response.json()
+        except (ConnectionError, KeyError, ValueError) as e:
+            print('Api не работает', repr(e))
+
+    async def get_data(self):
+        data = await self._get_datetime()
+        await self.client.aclose()
+        return data
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
 
 
 class TasksService:
@@ -28,6 +53,9 @@ class TasksService:
 
     def __init__(self, session: Session = Depends(get_session)):
         self.session = session
+        self.executor = ProcessPoolExecutor(max_workers=4)
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
 
     def _get(self, task_id: int, user_id: int):
         task = (
@@ -58,30 +86,26 @@ class TasksService:
         self.session.add(task)
         self.session.commit()
 
-        self.fill_result(task.id, user_id)
+        self.loop.run_until_complete(
+            self.fill_result(task.id, user_id)
+        )
+        self.loop.close()
 
         return task.id
 
-    async def get_datetime(self):
-        async with httpx.AsyncClient() as client:
-            response = await client.get('http://worldtimeapi.org/api/timezone/Asia/Yekaterinburg')
+    async def fill_result(self, task_id: int, user_id):
+        sum = await self.loop.run_in_executor(
+            self.executor,
+            sum,
+            400,
+            600
+        )
 
-        try:
-            json = response.json()
-            return json['datetime']
-        except (ConnectionError, KeyError, ValueError) as e:
-            print('Api не работает')
+        task = self._get(task_id, user_id)
+        with Profiler() as p:
+            data = await p.get_data()
+            date = data['datetime']
 
-    def fill_result(self, task_id: int, user_id):
-        with ProcessPoolExecutor(max_workers=4) as executor:
-            future = executor.submit(sum1, 400, 600)
-            sum = future.result(timeout=900)
-            print(sum)
-            task = self._get(task_id, user_id)
-
-            date = asyncio.run(self.get_datetime())
-
-            task.status = Status.FINISHED
-            task.result = {"sum": sum, "date": date}
-            self.session.commit()
-
+        task.status = Status.FINISHED
+        task.result = {"sum": sum, "date": date}
+        self.session.commit()
