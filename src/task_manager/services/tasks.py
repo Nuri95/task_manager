@@ -29,7 +29,7 @@ class Profiler:
     def __enter__(self):
         return self
 
-    async def _get_datetime(self):
+    async def _get_from_worldtimeapi(self):
         response = await self.client.get(
             'http://worldtimeapi.org/api/timezone/Asia/Yekaterinburg'
         )
@@ -40,7 +40,7 @@ class Profiler:
             print('Api не работает', repr(e))
 
     async def get_data(self):
-        data = await self._get_datetime()
+        data = await self._get_from_worldtimeapi()
         await self.client.aclose()
         return data
 
