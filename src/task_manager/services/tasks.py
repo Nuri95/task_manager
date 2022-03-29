@@ -1,4 +1,5 @@
 from concurrent.futures.process import ProcessPoolExecutor
+from datetime import datetime
 from typing import List
 
 import asyncio
@@ -18,34 +19,25 @@ from task_manager.sql_app.database import (
 from task_manager.sql_app.enums import Status
 
 
-def sum(a, b):
-    return a+b
+def sum1(a, b):
+    return a + b
 
 
 class Profiler:
     def __init__(self):
         self.client = httpx.AsyncClient()
+        self.url = 'http://worldtimeapi.org/api/timezone/Asia/Yekaterinburg'
 
-    def __enter__(self):
-        return self
-
-    async def _get_from_worldtimeapi(self):
-        response = await self.client.get(
-            'http://worldtimeapi.org/api/timezone/Asia/Yekaterinburg'
-        )
+    async def get_date(self):
+        response = await self.client.get(self.url)
 
         try:
-            return response.json()
+            json = response.json()
+            return json['datetime']
         except (ConnectionError, KeyError, ValueError) as e:
             print('Api не работает', repr(e))
-
-    async def get_data(self):
-        data = await self._get_from_worldtimeapi()
-        await self.client.aclose()
-        return data
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
+            await self.client.aclose()
+            return datetime.date()
 
 
 class TasksService:
@@ -54,6 +46,7 @@ class TasksService:
     def __init__(self, session: Session = Depends(get_session)):
         self.session = session
         self.executor = ProcessPoolExecutor(max_workers=4)
+        self.time_service = WorldTimeService()
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
 
@@ -96,15 +89,13 @@ class TasksService:
     async def fill_result(self, task_id: int, user_id):
         sum = await self.loop.run_in_executor(
             self.executor,
-            sum,
+            sum1,
             400,
             600
         )
-
         task = self._get(task_id, user_id)
-        with Profiler() as p:
-            data = await p.get_data()
-            date = data['datetime']
+
+        date = await self.time_service.get_date()
 
         task.status = Status.FINISHED
         task.result = {"sum": sum, "date": date}
