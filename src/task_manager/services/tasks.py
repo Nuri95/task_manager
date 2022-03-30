@@ -29,15 +29,20 @@ class WorldTimeService:
         self.url = 'http://worldtimeapi.org/api/timezone/Asia/Yekaterinburg'
 
     async def get_date(self):
-        response = await self.client.get(self.url)
-
         try:
+            response = await self.client.get(self.url)
             json = response.json()
-            return json['datetime']
+            if 'datetime' in json:
+                date = json['datetime']
+            else:
+                unixtime = int(json['unixtime'])
+                date = datetime.fromtimestamp(unixtime).isoformat()
+
+            return date
         except (ConnectionError, KeyError, ValueError) as e:
             print('Api не работает', repr(e))
             await self.client.aclose()
-            return datetime.date()
+            return datetime.now().isoformat()
 
 
 class TasksService:
