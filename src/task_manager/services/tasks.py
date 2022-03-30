@@ -8,6 +8,7 @@ from fastapi import (
     HTTPException,
     Depends,
 )
+from httpx import ConnectError
 from sqlalchemy.orm import Session
 
 from starlette import status
@@ -32,6 +33,7 @@ class WorldTimeService:
         try:
             response = await self.client.get(self.url)
             json = response.json()
+
             if 'datetime' in json:
                 date = json['datetime']
             else:
@@ -39,7 +41,7 @@ class WorldTimeService:
                 date = datetime.fromtimestamp(unixtime).isoformat()
 
             return date
-        except (ConnectionError, KeyError, ValueError) as e:
+        except (ConnectError, KeyError, ValueError) as e:
             print('Api не работает', repr(e))
             await self.client.aclose()
             return datetime.now().isoformat()
