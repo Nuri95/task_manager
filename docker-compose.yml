@@ -4,7 +4,7 @@ volumes:
 services:
   database:
     container_name: ${PREFIX}
-    image: sqlite3
+    image: nouchka/sqlite3
     restart: always
     volumes:
       - task_manager_db_volume:/var/lib/sqlite3/data
