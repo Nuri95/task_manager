@@ -7,7 +7,7 @@ services:
     image: sqlite3
     restart: always
     volumes:
-      - task_manager_db_volume:/var/lib/postgresql/data
+      - task_manager_db_volume:/var/lib/sqlite3/data
   task_manager:
     container_name: ${PREFIX}
     build:
