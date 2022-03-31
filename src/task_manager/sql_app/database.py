@@ -1,12 +1,10 @@
-import os
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+from task_manager.settings import settings
 
 engine = create_engine(
-    'sqlite:///' + os.path.join(basedir, 'sql_app.db'),
+    settings.database_url,
     connect_args={"check_same_thread": False}
 )
 
