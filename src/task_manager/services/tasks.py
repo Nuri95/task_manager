@@ -8,7 +8,10 @@ from fastapi import (
     HTTPException,
     Depends,
 )
-from httpx import ConnectError
+from httpx import (
+    ConnectError,
+    TimeoutException,
+)
 from sqlalchemy.orm import Session
 
 from starlette import status
@@ -20,7 +23,7 @@ from task_manager.sql_app.database import (
 from task_manager.sql_app.enums import Status
 
 
-def sum1(a, b):
+def calculation(a, b):
     return a + b
 
 
@@ -41,7 +44,7 @@ class WorldTimeService:
                 date = datetime.fromtimestamp(unixtime).isoformat()
 
             return date
-        except (ConnectError, KeyError, ValueError) as e:
+        except (TimeoutException, ConnectError, KeyError, ValueError) as e:
             print('Api не работает', repr(e))
             await self.client.aclose()
             return datetime.now().isoformat()
@@ -54,8 +57,6 @@ class TasksService:
         self.session = session
         self.executor = ProcessPoolExecutor(max_workers=4)
         self.time_service = WorldTimeService()
-        self.loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.loop)
 
     def _get(self, task_id: int, user_id: int):
         task = (
@@ -81,22 +82,21 @@ class TasksService:
 
         return tasks
 
-    def create(self, user_id: int) -> int:
+    async def create(self, user_id: int) -> int:
         task = tables.Task(user_id=user_id)
         self.session.add(task)
         self.session.commit()
 
-        self.loop.run_until_complete(
-            self.fill_result(task.id, user_id)
-        )
-        self.loop.close()
+        asyncio.create_task(self.fill_result(task.id, user_id))
 
         return task.id
 
     async def fill_result(self, task_id: int, user_id):
-        sum = await self.loop.run_in_executor(
+        loop = asyncio.get_event_loop()
+
+        sum = await loop.run_in_executor(
             self.executor,
-            sum1,
+            calculation,
             400,
             600
         )

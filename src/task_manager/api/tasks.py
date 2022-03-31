@@ -25,11 +25,11 @@ def get_tasks(
 
 
 @tasks_router.post('/', response_model=int)
-def create_task(
+async def create_task(
     service: TasksService = Depends(),
     user: User = Depends(get_current_user),
 ):
-    return service.create(user.id)
+    return await service.create(user.id)
 
 
 @tasks_router.get('/{task_id}', response_model=Task)
