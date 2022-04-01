@@ -70,7 +70,7 @@ class TasksService:
         return task
 
     def get(self, task_id: int, user_id: int) -> tables.Task:
-        return self._get(task_id, user_id).first()
+        return self._get(task_id, user_id)
 
     def get_list(self, user_id: int) -> List[tables.Task]:
         tasks = (
