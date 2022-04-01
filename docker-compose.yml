@@ -1,19 +1,19 @@
-version: '3.8'
+version: '3.3'
 volumes:
   task_manager_db_volume:
 services:
   database:
-    container_name: ${PREFIX}
+    container_name: sqlite3
     image: nouchka/sqlite3
-    restart: always
     volumes:
-      - task_manager_db_volume:/var/lib/sqlite3/data
+      - task_manager_db_volume:/home/mars/sqlite
   task_manager:
     container_name: ${PREFIX}
     build:
       context: .
       dockerfile: Dockerfile
     image: ${PREFIX}
-    restart: always
+    ports:
+      - "5000:5000"
     depends_on:
       - database
