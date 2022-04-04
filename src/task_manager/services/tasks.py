@@ -6,20 +6,15 @@ import asyncio
 import httpx
 from fastapi import (
     HTTPException,
-    Depends,
 )
 from httpx import (
     ConnectError,
     TimeoutException,
 )
-from sqlalchemy.orm import Session
 
 from starlette import status
 
 from task_manager.sql_app import tables
-from task_manager.sql_app.database import (
-    get_session,
-)
 from task_manager.sql_app.enums import Status
 
 
@@ -53,14 +48,13 @@ class WorldTimeService:
 class TasksService:
     count = 0
 
-    def __init__(self, session: Session = Depends(get_session)):
-        self.session = session
+    def __init__(self):
         self.executor = ProcessPoolExecutor(max_workers=4)
         self.time_service = WorldTimeService()
 
-    def _get(self, task_id: int, user_id: int):
+    def _get(self, session, task_id: int, user_id: int):
         task = (
-            self.session
+            session
             .query(tables.Task)
             .filter_by(id=task_id, user_id=user_id)
             .first()
@@ -69,12 +63,12 @@ class TasksService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
         return task
 
-    def get(self, task_id: int, user_id: int) -> tables.Task:
-        return self._get(task_id, user_id)
+    def get(self, session, task_id: int, user_id: int) -> tables.Task:
+        return self._get(session, task_id, user_id)
 
-    def get_list(self, user_id: int) -> List[tables.Task]:
+    def get_list(self, session,  user_id: int) -> List[tables.Task]:
         tasks = (
-            self.session
+            session
             .query(tables.Task)
             .filter_by(user_id=user_id)
             .all()
@@ -82,16 +76,16 @@ class TasksService:
 
         return tasks
 
-    async def create(self, user_id: int) -> int:
+    async def create(self, session, user_id: int) -> int:
         task = tables.Task(user_id=user_id)
-        self.session.add(task)
-        self.session.commit()
+        session.add(task)
+        session.commit()
 
-        asyncio.create_task(self.fill_result(task.id, user_id))
+        asyncio.create_task(self.fill_result(session, task.id, user_id))
 
         return task.id
 
-    async def fill_result(self, task_id: int, user_id):
+    async def fill_result(self, session, task_id: int, user_id):
         loop = asyncio.get_event_loop()
 
         sum = await loop.run_in_executor(
@@ -100,10 +94,10 @@ class TasksService:
             400,
             600
         )
-        task = self._get(task_id, user_id)
+        task = self._get(session, task_id, user_id)
 
         date = await self.time_service.get_date()
 
         task.status = Status.FINISHED
         task.result = {"sum": sum, "date": date}
-        self.session.commit()
+        session.commit()
