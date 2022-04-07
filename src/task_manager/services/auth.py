@@ -24,7 +24,7 @@ from task_manager.models.auth import (
 )
 from task_manager.settings import settings
 from task_manager.sql_app import tables
-from task_manager.sql_app.database import get_session
+from task_manager.sql_app.database import get_db_session
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/sign-in')
@@ -89,7 +89,7 @@ class AuthService:
         )
         return Token(access_token=token)
 
-    def __init__(self, session: Session = Depends(get_session)):
+    def __init__(self, session: Session = Depends(get_db_session)):
         self.session = session
 
     def register_new_user(self, user_data: UserCreate) -> Token:

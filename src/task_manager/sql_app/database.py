@@ -15,7 +15,7 @@ SessionLocal = sessionmaker(
 )
 
 
-def get_session() -> SessionLocal:
+def get_db_session() -> SessionLocal:
     session = SessionLocal()
     try:
         yield session
