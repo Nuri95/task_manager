@@ -75,23 +75,23 @@ class TasksService:
 
         return tasks
 
-    async def create(self, user_id: int) -> int:
+    async def create(self, user_id: int, task_data: dict) -> int:
         task = tables.Task(user_id=user_id)
         self.session.add(task)
         self.session.commit()
 
-        asyncio.create_task(self.fill_result(task.id, user_id))
+        asyncio.create_task(self.fill_result(task.id, user_id, task_data))
 
         return task.id
 
-    async def fill_result(self, task_id: int, user_id):
+    async def fill_result(self, task_id: int, user_id: int, task_data: dict):
         loop = asyncio.get_event_loop()
 
         sum = await loop.run_in_executor(
             self.executor,
             calculation,
-            400,
-            600
+            task_data.get('value1'),
+            task_data.get('value2')
         )
         task = self._get(task_id, user_id)
 

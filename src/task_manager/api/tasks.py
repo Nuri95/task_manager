@@ -4,10 +4,12 @@ from fastapi import (
     APIRouter,
     Depends,
 )
-from sqlalchemy.orm import Session
 
 from task_manager.models.auth import User
-from task_manager.models.tasks import Task
+from task_manager.models.tasks import (
+    Task,
+    CreateTask,
+)
 from task_manager.services.auth import get_current_user
 from task_manager.services.tasks import TasksService
 from task_manager.sql_app.database import get_db_session
@@ -30,9 +32,10 @@ def get_tasks(
 
 @tasks_router.post('/', response_model=int)
 async def create_task(
+    task_data: CreateTask,
     user: User = Depends(get_current_user),
 ):
-    return await service.create(user.id)
+    return await service.create(user.id, task_data.dict())
 
 
 @tasks_router.get('/{task_id}', response_model=Task)

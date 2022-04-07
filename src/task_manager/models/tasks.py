@@ -1,8 +1,16 @@
-from typing import Optional
+from typing import (
+    Optional,
+    Union,
+)
 
 from pydantic.main import BaseModel
 
 from task_manager.sql_app.enums import Status
+
+
+class CreateTask(BaseModel):
+    value1: Union[int, float]
+    value2: Union[int, float]
 
 
 class Task(BaseModel):
@@ -12,3 +20,5 @@ class Task(BaseModel):
 
     class Config:
         orm_mode = True
+
+
