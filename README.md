@@ -1,5 +1,6 @@
 Запуск проекта:
-- docker-compose up
+- Создать .env файл. Пример есть в .env-example
+- docker-compose up - запустить контейнер
 
 Тестовое задание:
 
