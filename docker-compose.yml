@@ -2,11 +2,6 @@ version: '3.3'
 volumes:
   task_manager_db_volume:
 services:
-  database:
-    container_name: sqlite3
-    image: nouchka/sqlite3
-    volumes:
-      - task_manager_db_volume:/app
   task_manager:
     env_file:
       - .env
@@ -19,5 +14,3 @@ services:
       - "5000:5000"
     volumes:
       - .:/app
-    depends_on:
-      - database
