@@ -14,6 +14,6 @@ COPY ./src ./src
 COPY .env .
 COPY init.sh init.sh
 
-EXPOSE 5000
+EXPOSE ${SERVER_PORT}
 
 CMD ["sh", "init.sh"]

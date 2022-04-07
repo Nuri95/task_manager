@@ -11,6 +11,6 @@ services:
       dockerfile: Dockerfile
     image: ${PREFIX}
     ports:
-      - "5000:5000"
+      - ${SERVER_PORT}:${SERVER_PORT}
     volumes:
       - .:/app
