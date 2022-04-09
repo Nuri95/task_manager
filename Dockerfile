@@ -4,7 +4,6 @@ WORKDIR /app
 
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
 ENV PATH="/root/.poetry/bin:$PATH"
-RUN apt-get install sqlite3
 
 COPY pyproject.toml .
 RUN poetry config virtualenvs.create false

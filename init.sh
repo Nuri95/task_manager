@@ -1,4 +1,3 @@
-poetry shell
 cd src/
 export PYTHONPATH=$PWD
 cd task_manager/
