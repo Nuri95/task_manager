@@ -23,6 +23,11 @@ db_session = get_db_session().__next__()
 service = TasksService(db_session)
 
 
+@tasks_router.on_event("shutdown")
+async def shutdown_event():
+    await service.time_service.aclose()
+
+
 @tasks_router.get('/', response_model=List[Task])
 def get_tasks(
     user: User = Depends(get_current_user),

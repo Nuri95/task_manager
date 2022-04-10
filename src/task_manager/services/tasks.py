@@ -23,9 +23,8 @@ def calculation(a, b):
 
 
 class WorldTimeService:
-    def __init__(self):
-        self.client = httpx.AsyncClient()
-        self.url = 'http://worldtimeapi.org/api/timezone/Asia/Yekaterinburg'
+    client = httpx.AsyncClient()
+    url = 'http://worldtimeapi.org/api/timezone/Asia/Yekaterinburg'
 
     async def get_date(self):
         try:
@@ -41,8 +40,10 @@ class WorldTimeService:
             return date
         except (TimeoutException, ConnectError, KeyError, ValueError) as e:
             print('Api не работает', repr(e))
-            await self.client.aclose()
             return datetime.now().isoformat()
+
+    async def aclose(self):
+        await self.client.aclose()
 
 
 class TasksService:
